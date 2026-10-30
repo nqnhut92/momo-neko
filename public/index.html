@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#bda77e">
+  <title>Mõ Mõ · A quiet room</title>
+  <meta name="description" content="Một bé mèo, một nhịp mõ, một căn phòng yên bình.">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="preload" href="/assets/chibi-base.webp" as="image">
+  <link rel="preload" href="/assets/chibi-arm.webp" as="image">
+  <script defer src="/app.js"></script>
+  <script>
+    window.va = window.va || function () {
+      (window.vaq = window.vaq || []).push(arguments);
+    };
+  </script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</head>
+<body>
+<main class="room" aria-label="Mèo cam ngồi gõ mõ trong phòng Nhật Bản">
+<div class="scene" role="img" aria-label="Mèo chibi màu cam tròn ú, tai nâu, má hồng, vui vẻ ngồi gõ mõ">
+<div class="chibi">
+<img class="swing" src="assets/chibi-arm.webp" alt="" aria-hidden="true" draggable="false">
+</div>
+</div>
+</main>
+<header class="ui">
+<div class="brand">mõ mõ<small>a little moment of calm</small>
+</div>
+<nav class="buttons" aria-label="Điều khiển">
+<button id="sound" aria-pressed="false">♫ Âm thanh</button>
+<button id="pause" aria-pressed="false" aria-label="Tạm dừng">
+<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+<rect x="5" y="4" width="5" height="16" rx="1" fill="currentColor"/>
+<rect x="14" y="4" width="5" height="16" rx="1" fill="currentColor"/>
+</svg>
+</button>
+<button id="full">⛶ Toàn màn hình</button>
+</nav>
+</header>
+<div class="caption">nothing to do. nowhere to be.</div>
+
+</body>
+</html>
