@@ -73,8 +73,8 @@ body {
   display:flex;
   align-items:center;
   gap:clamp(10px,.8vw,26px)}
-/* Icon-only round buttons; names live in aria-label and title (set in app.js). */
-button {
+/* Icon-only round buttons (and the source link); names live in aria-label and title. */
+button,.source {
   display:grid;
   place-items:center;
   flex-shrink:0;
@@ -87,16 +87,16 @@ button {
   backdrop-filter:blur(15px);
   color:#fff9ec;
   cursor:pointer}
-button svg {
+button svg,.source svg {
   display:block;
   width:clamp(20px,1.6vw,52px);
   height:clamp(20px,1.6vw,52px)}
 #sound[aria-pressed="true"] {
   background:#fff3;
   border-color:#fffc}
-button:hover {
+button:hover,.source:hover {
   background:#44302070}
-button:focus-visible {
+button:focus-visible,.source:focus-visible {
   outline:3px solid #fff;
   outline-offset:4px}
 .caption {
@@ -164,8 +164,9 @@ button:focus-visible {
   padding:22px}
 .brand {
   font-size:18px}
+/* the desktop row turned 90° counter-clockwise: its right end (fullscreen) is on top */
 .buttons {
-  flex-direction:column;
+  flex-direction:column-reverse;
   align-items:flex-end;
   gap:8px}
 .brand small {

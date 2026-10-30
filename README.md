@@ -7,9 +7,9 @@ A small ambient page: an orange chibi cat tapping a wooden temple block in a war
 - Two-pose mallet strike: mallet raised, then on the drum. Only the arm area swaps, so the cat's body never flickers.
 - Three evenly spaced strikes per two seconds (90 BPM), with the knock sound on the moment of contact.
 - Real recorded mokugyo audio, muted until the visitor enables it.
-- Icon-only controls for sound, pause/resume and fullscreen, with tooltips; Space toggles pause.
+- Icon-only controls for sound, pause/resume, the GitHub source and fullscreen, with tooltips; Space toggles pause.
 - Controls fade after inactivity; the caption stays visible.
-- Text and controls scale with the screen width, from phones up to 2K/4K displays. On portrait screens the controls stack vertically.
+- Text and controls scale with the screen width, from phones up to 2K/4K displays. On portrait screens the control row turns 90° counter-clockwise into a column, with fullscreen on top.
 - Vercel Web Analytics integration.
 
 ## Deploy on Vercel
@@ -57,3 +57,7 @@ The room and cat illustrations were AI-generated for this project. The cat was r
 Audio: **Mokugyo.wav** by **jonopodmore**, licensed **CC0**, downloaded as the high-quality MP3 preview. It is a real wooden fish from Kohya-san, Japan, played with its original cloth-covered beater.
 
 Source: https://freesound.org/people/jonopodmore/sounds/607215/ (see `public/assets/CREDITS.txt`).
+
+## License
+
+Code and illustrations are released under the [MIT License](LICENSE). The audio file `public/assets/mokugyo.mp3` is not covered by it: it is jonopodmore's recording, published under CC0 (see above).
