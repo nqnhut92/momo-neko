@@ -11,6 +11,7 @@ A small ambient page: an orange chibi cat tapping a wooden temple block in a war
 - Controls fade after inactivity; the caption stays visible.
 - Text and controls scale with the screen width, from phones up to 2K/4K displays. On portrait screens the control row turns 90° counter-clockwise into a column, with fullscreen on top.
 - Vercel Web Analytics integration.
+- An orange-cat favicon in SVG, ICO and PNG formats, plus a 180px Apple touch icon.
 
 ## Deploy on Vercel
 
