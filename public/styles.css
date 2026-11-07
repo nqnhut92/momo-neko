@@ -1,4 +1,3 @@
-
 * {
   box-sizing:border-box}
 body {
@@ -10,43 +9,42 @@ body {
 .room {
   position:fixed;
   inset:0;
-  background:url('assets/room.webp') center/cover no-repeat}
+  background:#bda77e url('assets/room.webp') center/cover no-repeat}
 .room:after {
   content:'';
   position:absolute;
   inset:0;
   background:linear-gradient(#38291e18,transparent 35%,#30221632);
   pointer-events:none}
+/* The cat is its own layer over the room, sized to the screen and capped at 620px.
+   assets/momo.mp4 holds the colour (top half) and the alpha (bottom half) of each frame;
+   app.js draws them into the canvas with WebGL. Until the first frame is drawn, or if WebGL
+   is missing, the transparent poster image is shown instead. */
 .scene {
   position:absolute;
-  width:min(49vw,690px);
-  height:auto;
+  aspect-ratio:1;
+  width:min(43vw,620px);
   bottom:7%;
   left:50%;
   transform:translateX(-50%);
-  filter:drop-shadow(0 20px 12px #43240b22)}
-.breathe {
-  transform-origin:300px 420px;
-  animation:breathe 4s ease-in-out infinite}
-.head {
-  transform-origin:300px 300px;
-  animation:nod 1.8s ease-in-out infinite}
-.arm {
-  transform-origin:399px 336px;
-  animation:tap 1.8s infinite}
-.ripple {
-  transform-origin:300px 461px;
-  animation:ripple 1.8s infinite;
+  filter:drop-shadow(0 18px 12px #43240b30);
+  pointer-events:none}
+.cat,.clip {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%}
+.cat {
+  user-select:none}
+canvas.cat {
+  visibility:hidden}
+.drawn canvas.cat {
+  visibility:visible}
+.drawn .still {
+  visibility:hidden}
+/* The video only feeds the canvas: it stays in the page (so browsers keep decoding it) but is never seen. */
+.clip {
   opacity:0}
-.tail {
-  transform-origin:385px 435px;
-  animation:tail 5s ease-in-out infinite}
-.steam {
-  stroke:#fff9e1;
-  stroke-width:2;
-  fill:none;
-  opacity:.35;
-  animation:steam 5s infinite}
 .ui {
   position:fixed;
   z-index:4;
@@ -56,8 +54,7 @@ body {
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:clamp(30px,2.4vw,76px) clamp(36px,2.8vw,90px);
-  transition:opacity 1s}
+  padding:clamp(30px,2.4vw,76px) clamp(36px,2.8vw,90px)}
 .brand {
   font-family:Georgia,serif;
   font-size:clamp(22px,1.75vw,56px);
@@ -72,7 +69,8 @@ body {
 .buttons {
   display:flex;
   align-items:center;
-  gap:clamp(10px,.8vw,26px)}
+  gap:clamp(10px,.8vw,26px);
+  transition:opacity 1s}
 /* Icon-only round buttons (and the source link); names live in aria-label and title. */
 button,.source {
   display:grid;
@@ -91,7 +89,7 @@ button svg,.source svg {
   display:block;
   width:clamp(20px,1.6vw,52px);
   height:clamp(20px,1.6vw,52px)}
-#sound[aria-pressed="true"] {
+#sound[data-on="true"] {
   background:#fff3;
   border-color:#fffc}
 button:hover,.source:hover {
@@ -107,59 +105,12 @@ button:focus-visible,.source:focus-visible {
   text-align:center;
   opacity:.7;
   font:italic clamp(14px,1.1vw,36px) Georgia,serif;
-  letter-spacing:.08em;
-  transition:opacity 1s}
+  letter-spacing:.08em}
 .hidden .buttons {
   opacity:0;
   pointer-events:none}
-.buttons {
-  transition:opacity 1s}
-.paused * {
-  animation-play-state:paused!important}
-@keyframes breathe {
-  50% {
-  transform:scale(1.012,1.019)}
-}
-@keyframes nod {
-  0%,45%,100% {
-  transform:rotate(-1deg)}
-60% {
-  transform:translateY(3px) rotate(1deg)}
-}
-@keyframes tap {
-  0%,25%,100% {
-  transform:rotate(-27deg)}
-48% {
-  transform:rotate(12deg)}
-54% {
-  transform:rotate(12deg)}
-72% {
-  transform:rotate(-27deg)}
-}
-@keyframes ripple {
-  0%,48% {
-  opacity:0;
-  transform:scale(.75)}
-54% {
-  opacity:.45}
-85%,100% {
-  opacity:0;
-  transform:scale(1.35)}
-}
-@keyframes tail {
-  50% {
-  transform:rotate(7deg)}
-}
-@keyframes steam {
-  50% {
-  transform:translateY(-14px);
-  opacity:.15}
-}
 @media(max-aspect-ratio:1/1) {
-  .scene {
-  width:94vw;
-  bottom:13%}
-.ui {
+  .ui {
   align-items:flex-start;
   padding:22px}
 .brand {
@@ -173,58 +124,7 @@ button:focus-visible,.source:focus-visible {
   white-space:nowrap}
 .room {
   background-position:58% center}
-}
-@media(prefers-reduced-motion:reduce) {
-  .breathe,.head,.tail,.steam {
-  animation:none}
-}
-
 .scene {
-  aspect-ratio:1;
-  bottom:7%;
-  width:min(43vw,620px);
-  filter:drop-shadow(0 18px 12px #43240b30);
-  animation:none}
-.chibi {
-  position:relative;
-  width:100%;
-  height:100%;
-  animation:none}
-/* The cat body is a single image that never changes, so nothing flickers on the beat.
-   Only the arm area swaps: .swing (mallet raised) and .down (mallet on the drum).
-   .swing carries the clock that app.js reads for the sound. */
-.frame {
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  max-width:none;
-  pointer-events:none}
-/* step-end: a hard cut between the two poses. A crossfade would show both mallets
-   half-transparent for a moment, which reads as a white smear on the drum. */
-.swing {
-  animation:arm-up calc(2000ms / 3) step-end infinite}
-.down {
-  animation:arm-down calc(2000ms / 3) step-end infinite}
-@keyframes arm-up {
-  0% {
-  opacity:1}
-48% {
-  opacity:0}
-60% {
-  opacity:1}
-}
-@keyframes arm-down {
-  0% {
-  opacity:0}
-48% {
-  opacity:1}
-60% {
-  opacity:0}
-}
-@media(max-aspect-ratio:1/1) {
-  .scene {
   width:91vw;
   bottom:13%}
 }
-

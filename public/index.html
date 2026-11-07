@@ -6,15 +6,14 @@
   <meta name="theme-color" content="#bda77e">
   <title>Mõ Mõ · A quiet room</title>
   <meta name="description" content="Một bé mèo, một nhịp mõ, một căn phòng yên bình.">
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any">
-  <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
-  <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
-  <link rel="stylesheet" href="/styles.css">
-  <link rel="preload" href="/assets/chibi-body.webp" as="image">
-  <link rel="preload" href="/assets/chibi-arm-down.webp" as="image">
-  <link rel="preload" href="/assets/chibi-arm-up.webp" as="image">
-  <script defer src="/app.js"></script>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" sizes="any">
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="favicon.ico" sizes="16x16 32x32 48x48">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" sizes="180x180">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preload" href="assets/room.webp" as="image">
+  <link rel="preload" href="assets/momo-poster.webp" as="image">
+  <script defer src="app.js"></script>
   <script>
     window.va = window.va || function () {
       (window.vaq = window.vaq || []).push(arguments);
@@ -25,29 +24,27 @@
 <body>
 <main class="room" aria-label="Mèo cam ngồi gõ mõ trong phòng Nhật Bản">
 <div class="scene" role="img" aria-label="Mèo chibi màu cam tròn ú, tai nâu, má hồng, vui vẻ ngồi gõ mõ">
-<div class="chibi">
-<img class="frame" src="assets/chibi-body.webp" alt="" aria-hidden="true" draggable="false">
-<img class="frame down" src="assets/chibi-arm-down.webp" alt="" aria-hidden="true" draggable="false">
-<img class="frame swing" src="assets/chibi-arm-up.webp" alt="" aria-hidden="true" draggable="false">
-</div>
+<img class="cat still" src="assets/momo-poster.webp" alt="" draggable="false">
+<canvas class="cat" width="688" height="688" aria-hidden="true"></canvas>
+<video class="clip" src="assets/momo.mp4" autoplay loop muted playsinline preload="auto" disablepictureinpicture aria-hidden="true"></video>
 </div>
 </main>
 <header class="ui">
-<div class="brand">mõ mõ<small>a little moment of calm</small>
+<div class="brand">mõ mõ<small lang="en">a little moment of calm</small>
 </div>
 <nav class="buttons" aria-label="Điều khiển">
-<button id="sound" aria-pressed="false" aria-label="Bật âm thanh" title="Bật âm thanh"></button>
-<button id="pause" aria-pressed="false" aria-label="Tạm dừng" title="Tạm dừng">
+<button id="sound" data-on="false" aria-label="Bật âm thanh" title="Bật âm thanh"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 9.5l5 5M21 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+<button id="pause" aria-label="Tạm dừng" title="Tạm dừng">
 <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
 <rect x="5" y="4" width="5" height="16" rx="1" fill="currentColor"/>
 <rect x="14" y="4" width="5" height="16" rx="1" fill="currentColor"/>
 </svg>
 </button>
 <a class="source" href="https://github.com/nqnhut92/momo-neko" target="_blank" rel="noopener" aria-label="Mã nguồn trên GitHub" title="Mã nguồn trên GitHub"><svg viewBox="0 0 16 16" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
-<button id="full" aria-label="Toàn màn hình" title="Toàn màn hình"></button>
+<button id="full" aria-label="Toàn màn hình" title="Toàn màn hình"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
 </nav>
 </header>
-<div class="caption">nothing to do. nowhere to be.</div>
+<div class="caption" lang="en">nothing to do. nowhere to be.</div>
 
 </body>
 </html>
