@@ -104,19 +104,49 @@ video.addEventListener('play', () => {
 });
 video.addEventListener('pause', showPaused);
 
+function showFullscreenHint(msg) {
+  const existing = document.querySelector('.fs-hint');
+  if (existing) existing.remove();
+  const hint = document.createElement('div');
+  hint.className = 'fs-hint';
+  hint.textContent = msg;
+  document.body.appendChild(hint);
+  setTimeout(() => hint.classList.add('show'), 20);
+  setTimeout(() => {
+    hint.classList.remove('show');
+    setTimeout(() => hint.remove(), 400);
+  }, 4000);
+}
+
 fullButton.addEventListener('click', async () => {
+  const doc = document;
+  const docEl = doc.documentElement;
+  const isFull = Boolean(doc.fullscreenElement || doc.webkitFullscreenElement);
   try {
-    if (document.fullscreenElement) await document.exitFullscreen();
-    else await document.documentElement.requestFullscreen?.();
+    if (isFull) {
+      if (doc.exitFullscreen) await doc.exitFullscreen();
+      else if (doc.webkitExitFullscreen) await doc.webkitExitFullscreen();
+    } else {
+      if (docEl.requestFullscreen) {
+        await docEl.requestFullscreen();
+      } else if (docEl.webkitRequestFullscreen) {
+        await docEl.webkitRequestFullscreen();
+      } else {
+        showFullscreenHint('iPhone cần chọn Chia sẻ → Thêm vào MH chính để xem tràn viền 🍁');
+      }
+    }
   } catch (error) {
     console.warn('Fullscreen is unavailable in this browser.', error);
+    showFullscreenHint('Trình duyệt không cho phép toàn màn hình lúc này.');
   }
 });
 
 // Esc can also leave fullscreen, so follow the browser's state rather than our own clicks.
-document.addEventListener('fullscreenchange', () => {
-  const full = Boolean(document.fullscreenElement);
-  setButton(fullButton, full ? exitFullIcon : enterFullIcon, full ? 'Thoát toàn màn hình' : 'Toàn màn hình');
+['fullscreenchange', 'webkitfullscreenchange'].forEach(evt => {
+  document.addEventListener(evt, () => {
+    const full = Boolean(document.fullscreenElement || document.webkitFullscreenElement);
+    setButton(fullButton, full ? exitFullIcon : enterFullIcon, full ? 'Thoát toàn màn hình' : 'Toàn màn hình');
+  });
 });
 
 setButton(soundButton, mutedIcon, 'Bật âm thanh');
@@ -127,6 +157,21 @@ const drawFrame = (() => {
   const gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: true, antialias: false })
     || canvas.getContext('experimental-webgl');
   if (!gl) return () => {};
+
+  function resizeViewport() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = canvas.getBoundingClientRect();
+    if (!rect.width) return;
+    const targetW = Math.round(rect.width * dpr);
+    const targetH = Math.round(rect.height * dpr);
+    if (canvas.width !== targetW || canvas.height !== targetH) {
+      canvas.width = targetW;
+      canvas.height = targetH;
+      gl.viewport(0, 0, targetW, targetH);
+    }
+  }
+  window.addEventListener('resize', resizeViewport);
+
   const compile = (type, source) => {
     const shader = gl.createShader(type);
     gl.shaderSource(shader, source);
@@ -159,6 +204,7 @@ const drawFrame = (() => {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   return () => {
     if (video.readyState < 2) return;
+    resizeViewport();
     try {
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, video);
     } catch (error) {
@@ -181,6 +227,34 @@ function audioLatency() {
   return audioContext ? audioContext.outputLatency || audioContext.baseLatency || 0 : 0;
 }
 
+function spawnMokugyoRipple() {
+  const ripple = document.createElement('div');
+  ripple.className = 'ripple';
+  scene.appendChild(ripple);
+  ripple.addEventListener('animationend', () => ripple.remove());
+}
+
+async function handleInteractiveStrike() {
+  wakeControls();
+  if (muted) {
+    try {
+      await initializeAudio();
+      muted = false;
+      soundButton.dataset.on = 'true';
+      setButton(soundButton, soundOnIcon, 'Tắt âm thanh');
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  spawnMokugyoRipple();
+  knock(0);
+}
+
+scene.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  handleInteractiveStrike();
+});
+
 function onVideoFrame(now, frame) {
   drawFrame();
   const time = frame ? frame.mediaTime : video.currentTime;
@@ -188,7 +262,9 @@ function onVideoFrame(now, frame) {
   const beat = Math.floor((time + BEAT_EPSILON_S) / BEAT_S) % BEATS_PER_LOOP;
   if (beat !== lastBeat) {
     const untilShown = frame ? (frame.expectedDisplayTime - performance.now()) / 1000 : 0;
-    knock(Math.min(MAX_LOOKAHEAD_S, Math.max(0, untilShown - audioLatency())));
+    const delay = Math.min(MAX_LOOKAHEAD_S, Math.max(0, untilShown - audioLatency()));
+    knock(delay);
+    setTimeout(spawnMokugyoRipple, Math.max(0, (untilShown || 0) * 1000));
   }
   lastBeat = beat;
   watch();
@@ -228,6 +304,54 @@ document.addEventListener('keydown', event => {
   if (event.code === 'Space' && event.target === document.body) {
     event.preventDefault();
     pauseButton.click();
+  } else if ((event.code === 'KeyK' || event.code === 'Enter') && event.target === document.body) {
+    event.preventDefault();
+    handleInteractiveStrike();
   }
 });
 wakeControls();
+
+// Falling autumn leaves (Momiji)
+if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const leavesContainer = document.createElement('div');
+  leavesContainer.className = 'leaves';
+  leavesContainer.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(leavesContainer);
+
+  const leafSvg = color => `
+    <svg viewBox="0 0 24 24" width="100%" height="100%" style="display:block">
+      <path fill="${color}" d="M12 2c.2 2.8-.5 4.8-1.8 6.5-1.8-1.5-3.5-2.2-5.8-2.5.8 2.5 1.2 4.5.8 6.8-2.2-.8-4.2-1-6.2-.8 1.8 1.8 3.2 3.5 4.2 5.5-2 .5-3.8 1.5-5.2 2.8 2.2.8 4.2.8 6.2.2-.2 2.2 0 4.2.8 6.2 1.5-1.8 2.8-3.5 3.5-5.5 1.5 1.8 3 3.2 5 4.2-.2-2.2 0-4.2.8-6.2 2 .5 4 .5 6.2-.2-1.5-1.2-3.2-2.2-5.2-2.8 1-2 2.5-3.8 4.2-5.5-2-.2-4 0-6.2.8-.5-2.2 0-4.2.8-6.8-2.2.2-4 1-5.8 2.5-1.2-1.8-2-3.8-1.8-6.5z"/>
+      <path stroke="#631405" stroke-width="0.8" fill="none" opacity="0.65" d="M12 22V8m0 4l-4-3m4 5l4-3m-4 5l-3-1m3 2l3-1"/>
+    </svg>`;
+
+  const leafColors = ['#c83820', '#de4c28', '#e67332', '#ba3018', '#cc4222'];
+  const NUM_LEAVES = 9;
+
+  for (let i = 0; i < NUM_LEAVES; i++) {
+    const leaf = document.createElement('div');
+    leaf.className = 'leaf';
+    const color = leafColors[i % leafColors.length];
+    leaf.innerHTML = leafSvg(color);
+
+    // Gió thổi từ khu vườn cây phong (bên phải: 35%..105%) bay dần vào trong phòng sang bên trái
+    const leftPercent = 32 + (i * 8) + (Math.random() * 6 - 3);
+    const fallDuration = 10 + Math.random() * 6; // 10s - 16s
+    const swayDuration = 2.4 + Math.random() * 1.6;
+    const fallDelay = -Math.random() * fallDuration;
+    const swayDelay = -Math.random() * swayDuration;
+    const scale = 0.85 + Math.random() * 0.45;
+
+    leaf.style.left = `${leftPercent}%`;
+    leaf.style.animationDuration = `${fallDuration}s`;
+    leaf.style.animationDelay = `${fallDelay}s`;
+
+    const svg = leaf.querySelector('svg');
+    if (svg) {
+      svg.style.animationDuration = `${swayDuration}s`;
+      svg.style.animationDelay = `${swayDelay}s`;
+      svg.style.transform = `scale(${scale})`;
+    }
+
+    leavesContainer.appendChild(leaf);
+  }
+}
