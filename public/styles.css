@@ -51,34 +51,66 @@ body {
   45% { opacity:.55; }
   100% { transform:translate(-50%,-50%) scale(2.4); opacity:0; }
 }
-/* Falling autumn momiji leaves */
+/* Falling autumn momiji leaves blown from the garden tree */
 .leaves {
   position:fixed;
   inset:0;
   pointer-events:none;
   overflow:hidden;
-  z-index:2}
+  z-index:2;
+  perspective:800px}
 .leaf {
   position:absolute;
-  top:-50px;
-  width:clamp(22px,2.2vw,38px);
-  height:clamp(22px,2.2vw,38px);
-  animation:leafFall linear infinite}
+  left:var(--start-x, 85vw);
+  top:var(--start-y, 20vh);
+  width:clamp(20px,2vw,34px);
+  height:clamp(20px,2vw,34px);
+  will-change:transform, opacity;
+  animation:leafFloat linear infinite;
+  animation-duration:var(--fall-dur, 14s);
+  animation-delay:var(--fall-delay, 0s)}
 .leaf svg {
   display:block;
   width:100%;
   height:100%;
-  filter:drop-shadow(0 4px 8px #30180845);
-  animation:leafSway ease-in-out infinite alternate}
-@keyframes leafFall {
-  0% { transform:translateY(-50px) translateX(0); opacity:0; }
-  8% { opacity:.95; }
-  85% { opacity:.9; }
-  100% { transform:translateY(112vh) translateX(-120px); opacity:0; }
+  filter:drop-shadow(0 4px 10px #30180840);
+  animation:leafTumble ease-in-out infinite alternate;
+  animation-duration:var(--sway-dur, 3s);
+  animation-delay:var(--sway-delay, 0s);
+  transform-origin:50% 50%}
+@keyframes leafFloat {
+  0% {
+    transform:translate3d(0,0,0) scale(var(--scale-start, .55));
+    opacity:0;
+  }
+  10% {
+    opacity:.95;
+  }
+  42% {
+    transform:translate3d(calc(var(--drift-x, -48vw) * .4), calc(var(--drift-y, 65vh) * .35 - 12px), 0) scale(calc(var(--scale-start, .55) * .6 + var(--scale-end, 1.1) * .4));
+  }
+  78% {
+    transform:translate3d(calc(var(--drift-x, -48vw) * .78), calc(var(--drift-y, 65vh) * .75 + 6px), 0) scale(calc(var(--scale-start, .55) * .2 + var(--scale-end, 1.1) * .8));
+    opacity:.95;
+  }
+  88% {
+    opacity:.8;
+  }
+  100% {
+    transform:translate3d(var(--drift-x, -48vw), var(--drift-y, 65vh), 0) scale(var(--scale-end, 1.1));
+    opacity:0;
+  }
 }
-@keyframes leafSway {
-  0% { transform:translateX(35px) rotateZ(-35deg) rotateY(-35deg); }
-  100% { transform:translateX(-35px) rotateZ(45deg) rotateY(40deg); }
+@keyframes leafTumble {
+  0% {
+    transform:translate3d(20px, 0, 0) rotateZ(-40deg) rotateY(-50deg) rotateX(15deg);
+  }
+  50% {
+    transform:translate3d(0, -6px, 0) rotateZ(10deg) rotateY(15deg) rotateX(-20deg);
+  }
+  100% {
+    transform:translate3d(-20px, 6px, 0) rotateZ(55deg) rotateY(55deg) rotateX(25deg);
+  }
 }
 .cat,.clip {
   position:absolute;
@@ -201,4 +233,9 @@ button:focus-visible,.source:focus-visible {
 .scene {
   width:91vw;
   bottom:13%}
+.leaf {
+  --drift-x:-44vw;
+  --drift-y:64vh;
+  left:calc(var(--start-x, 86vw) * .92 + 10vw);
+  top:calc(var(--start-y, 20vh) * .9 + 8vh)}
 }

@@ -324,8 +324,8 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
       <path stroke="#631405" stroke-width="0.8" fill="none" opacity="0.65" d="M12 22V8m0 4l-4-3m4 5l4-3m-4 5l-3-1m3 2l3-1"/>
     </svg>`;
 
-  const leafColors = ['#c83820', '#de4c28', '#e67332', '#ba3018', '#cc4222'];
-  const NUM_LEAVES = 9;
+  const leafColors = ['#b52a18', '#cc3b1e', '#e05828', '#f27e33', '#d4431f', '#9e1c0d'];
+  const NUM_LEAVES = 10;
 
   for (let i = 0; i < NUM_LEAVES; i++) {
     const leaf = document.createElement('div');
@@ -333,23 +333,32 @@ if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
     const color = leafColors[i % leafColors.length];
     leaf.innerHTML = leafSvg(color);
 
-    // Gió thổi từ khu vườn cây phong (bên phải: 35%..105%) bay dần vào trong phòng sang bên trái
-    const leftPercent = 32 + (i * 8) + (Math.random() * 6 - 3);
-    const fallDuration = 10 + Math.random() * 6; // 10s - 16s
-    const swayDuration = 2.4 + Math.random() * 1.6;
-    const fallDelay = -Math.random() * fallDuration;
-    const swayDelay = -Math.random() * swayDuration;
-    const scale = 0.85 + Math.random() * 0.45;
+    // Gió thu bứt lá từ tán cây phong đỏ ngoài vườn (x: 74vw..98vw, y: 10vh..36vh).
+    // Tuyệt đối không spawn từ trên mép trần nhà (y <= 8vh) để người nhìn thấy rõ lá bứt ra từ tán cây.
+    const startX = (74 + (i % 5) * 5.2 + (Math.random() * 4 - 2)).toFixed(1);
+    const startY = (11 + Math.random() * 25).toFixed(1);
+    const driftX = (-(42 + Math.random() * 24)).toFixed(1);
+    const driftY = (56 + Math.random() * 24).toFixed(1);
+    const scaleStart = (0.48 + Math.random() * 0.16).toFixed(2);
+    const scaleEnd = (0.95 + Math.random() * 0.30).toFixed(2);
+    const fallDur = (11 + Math.random() * 5.5).toFixed(1);
+    const swayDur = (2.2 + Math.random() * 1.5).toFixed(1);
+    const fallDelay = (-Math.random() * fallDur).toFixed(1);
+    const swayDelay = (-Math.random() * swayDur).toFixed(1);
 
-    leaf.style.left = `${leftPercent}%`;
-    leaf.style.animationDuration = `${fallDuration}s`;
-    leaf.style.animationDelay = `${fallDelay}s`;
+    leaf.style.setProperty('--start-x', `${startX}vw`);
+    leaf.style.setProperty('--start-y', `${startY}vh`);
+    leaf.style.setProperty('--drift-x', `${driftX}vw`);
+    leaf.style.setProperty('--drift-y', `${driftY}vh`);
+    leaf.style.setProperty('--scale-start', scaleStart);
+    leaf.style.setProperty('--scale-end', scaleEnd);
+    leaf.style.setProperty('--fall-dur', `${fallDur}s`);
+    leaf.style.setProperty('--fall-delay', `${fallDelay}s`);
 
     const svg = leaf.querySelector('svg');
     if (svg) {
-      svg.style.animationDuration = `${swayDuration}s`;
-      svg.style.animationDelay = `${swayDelay}s`;
-      svg.style.transform = `scale(${scale})`;
+      svg.style.setProperty('--sway-dur', `${swayDur}s`);
+      svg.style.setProperty('--sway-delay', `${swayDelay}s`);
     }
 
     leavesContainer.appendChild(leaf);
