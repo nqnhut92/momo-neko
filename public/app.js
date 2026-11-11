@@ -36,15 +36,12 @@ let sample;
 let hideTimer;
 let lastBeat = -1;
 let wakeLock = null;
-let wakeLockPending = false;
 
 async function requestWakeLock() {
-  if (!('wakeLock' in navigator) || document.hidden || video.paused) return;
-  if (wakeLock || wakeLockPending) return;
-  wakeLockPending = true;
+  if (!('wakeLock' in navigator) || document.hidden || video.paused || wakeLock) return;
   try {
     const sentinel = await navigator.wakeLock.request('screen');
-    if (video.paused || document.hidden) {
+    if (wakeLock || video.paused || document.hidden) {
       await sentinel.release();
       return;
     }
@@ -54,8 +51,6 @@ async function requestWakeLock() {
     });
   } catch (error) {
     // Expected when a user gesture is required, Battery/Low Power Mode is on, or outside HTTPS.
-  } finally {
-    wakeLockPending = false;
   }
 }
 
@@ -340,10 +335,9 @@ supportModal?.addEventListener('click', event => {
 if (location.hash === '#support') openSupportModal();
 
 document.addEventListener('pointermove', wakeControls);
-document.addEventListener('pointerdown', () => {
-  wakeControls();
-  requestWakeLock();
-});
+document.addEventListener('pointerdown', wakeControls);
+document.addEventListener('touchend', requestWakeLock);
+document.addEventListener('click', requestWakeLock);
 document.addEventListener('focusin', wakeControls);
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden && !video.paused) requestWakeLock();
