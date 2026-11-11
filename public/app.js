@@ -35,6 +35,36 @@ let samplePromise;
 let sample;
 let hideTimer;
 let lastBeat = -1;
+let wakeLock = null;
+let wakeLockPending = false;
+
+async function requestWakeLock() {
+  if (!('wakeLock' in navigator) || document.hidden || video.paused) return;
+  if (wakeLock || wakeLockPending) return;
+  wakeLockPending = true;
+  try {
+    const sentinel = await navigator.wakeLock.request('screen');
+    if (video.paused || document.hidden) {
+      await sentinel.release();
+      return;
+    }
+    wakeLock = sentinel;
+    sentinel.addEventListener('release', () => {
+      if (wakeLock === sentinel) wakeLock = null;
+    });
+  } catch (error) {
+    // Expected when a user gesture is required, Battery/Low Power Mode is on, or outside HTTPS.
+  } finally {
+    wakeLockPending = false;
+  }
+}
+
+function releaseWakeLock() {
+  if (!wakeLock) return;
+  const sentinel = wakeLock;
+  wakeLock = null;
+  sentinel.release().catch(() => {});
+}
 
 async function initializeAudio() {
   audioContext ??= new (window.AudioContext || window.webkitAudioContext)();
@@ -104,8 +134,12 @@ pauseButton.addEventListener('click', () => {
 video.addEventListener('play', () => {
   showPaused();
   if (!hasFrameCallback && !watching) watch();
+  requestWakeLock();
 });
-video.addEventListener('pause', showPaused);
+video.addEventListener('pause', () => {
+  showPaused();
+  releaseWakeLock();
+});
 
 function showFullscreenHint(msg) {
   const existing = document.querySelector('.fs-hint');
@@ -268,6 +302,7 @@ watch();
 if (matchMedia('(prefers-reduced-motion: reduce)').matches) video.pause();
 else video.play().catch(showPaused);
 showPaused();
+if (!video.paused) requestWakeLock();
 
 // Captions stay visible; only the controls fade after inactivity.
 function wakeControls() {
@@ -305,8 +340,14 @@ supportModal?.addEventListener('click', event => {
 if (location.hash === '#support') openSupportModal();
 
 document.addEventListener('pointermove', wakeControls);
-document.addEventListener('pointerdown', wakeControls);
+document.addEventListener('pointerdown', () => {
+  wakeControls();
+  requestWakeLock();
+});
 document.addEventListener('focusin', wakeControls);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && !video.paused) requestWakeLock();
+});
 document.addEventListener('keydown', event => {
   if (event.key === 'Escape' && supportModal && !supportModal.hidden) {
     event.preventDefault();
@@ -314,6 +355,7 @@ document.addEventListener('keydown', event => {
     return;
   }
   wakeControls();
+  requestWakeLock();
   if (event.code === 'Space' && event.target === document.body && (!supportModal || supportModal.hidden)) {
     event.preventDefault();
     pauseButton.click();

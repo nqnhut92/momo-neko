@@ -37,7 +37,7 @@ Open http://localhost:8000. This is a static HTML/CSS/JavaScript project with no
 
 - `public/index.html` — scene markup and analytics snippet.
 - `public/styles.css` — layout and responsive styles.
-- `public/app.js` — audio, video playback, fullscreen and the icon controls.
+- `public/app.js` — audio, video playback, screen wake lock, fullscreen and the icon controls.
 - `public/assets/` — `room.webp` (the empty room), `momo.mp4` (the cat loop, colour and alpha stacked), `momo-poster.webp` (its first frame as a transparent image) and the recorded MP3.
 - `vercel.json` — static deployment configuration, including a one-day cache for `/assets/*`. Returning visitors may keep an old asset for up to a day after it is replaced.
 
