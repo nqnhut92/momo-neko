@@ -151,8 +151,8 @@ canvas.cat {
   align-items:center;
   gap:clamp(10px,.8vw,26px);
   transition:opacity 1s}
-/* Icon-only round buttons (and the source link); names live in aria-label and title. */
-button,.source {
+/* Icon-only round buttons (and the source/sponsor links); names live in aria-label and title. */
+button,.source,.sponsor {
   display:grid;
   place-items:center;
   flex-shrink:0;
@@ -165,16 +165,16 @@ button,.source {
   backdrop-filter:blur(15px);
   color:#fff9ec;
   cursor:pointer}
-button svg,.source svg {
+button svg,.source svg,.sponsor svg {
   display:block;
   width:clamp(20px,1.6vw,52px);
   height:clamp(20px,1.6vw,52px)}
 #sound[data-on="true"] {
   background:#fff3;
   border-color:#fffc}
-button:hover,.source:hover {
+button:hover,.source:hover,.sponsor:hover {
   background:#44302070}
-button:focus-visible,.source:focus-visible {
+button:focus-visible,.source:focus-visible,.sponsor:focus-visible {
   outline:3px solid #fff;
   outline-offset:4px}
 .caption {

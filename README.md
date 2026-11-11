@@ -7,7 +7,7 @@ A small ambient page: an orange chibi cat tapping a wooden temple block in a war
 - Two layers: the empty room as a full-screen background, and the cat as a transparent looping video on top, sized to the screen (at most 620 px wide, 91% of the width on portrait screens). The mallet strikes evenly: three every two seconds (90 BPM).
 - The knock sound is triggered from the video clock, on the frame where the mallet lands, and scheduled to cover the display and audio output latency.
 - Real recorded mokugyo audio, muted until the visitor enables it.
-- Icon-only controls for sound, pause/resume, the GitHub source and fullscreen, with tooltips; Space toggles pause.
+- Icon-only controls for sound, pause/resume, the GitHub source, Ko-fi support and fullscreen, with tooltips; Space toggles pause.
 - Controls fade after inactivity; the caption stays visible. With "reduce motion" enabled the page starts on the still cat.
 - Text and controls scale with the screen width, from phones up to 2K/4K displays. On portrait screens the control row turns 90° counter-clockwise into a column, with fullscreen on top.
 - Vercel Web Analytics integration.
