@@ -151,8 +151,8 @@ canvas.cat {
   align-items:center;
   gap:clamp(10px,.8vw,26px);
   transition:opacity 1s}
-/* Icon-only round buttons (and the source/sponsor links); names live in aria-label and title. */
-button,.source,.sponsor {
+/* Icon-only round buttons (and the source link); names live in aria-label and title. */
+.buttons>button,.buttons>.source {
   display:grid;
   place-items:center;
   flex-shrink:0;
@@ -165,18 +165,114 @@ button,.source,.sponsor {
   backdrop-filter:blur(15px);
   color:#fff9ec;
   cursor:pointer}
-button svg,.source svg,.sponsor svg {
+.buttons>button svg,.buttons>.source svg {
   display:block;
   width:clamp(20px,1.6vw,52px);
   height:clamp(20px,1.6vw,52px)}
 #sound[data-on="true"] {
   background:#fff3;
   border-color:#fffc}
-button:hover,.source:hover,.sponsor:hover {
+.buttons>button:hover,.buttons>.source:hover {
   background:#44302070}
-button:focus-visible,.source:focus-visible,.sponsor:focus-visible {
+.buttons>button:focus-visible,.buttons>.source:focus-visible {
   outline:3px solid #fff;
   outline-offset:4px}
+.support-overlay {
+  position:fixed;
+  inset:0;
+  z-index:20;
+  display:grid;
+  place-items:center;
+  padding:20px;
+  background:#140d0880;
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px)}
+.support-overlay[hidden] {
+  display:none}
+.support-card {
+  position:relative;
+  width:min(350px,100%);
+  max-height:92dvh;
+  overflow-y:auto;
+  padding:28px 24px 22px;
+  border-radius:28px;
+  text-align:center;
+  color:#fff9ec;
+  background:linear-gradient(155deg,#3c2818c7,#1c130cb8);
+  backdrop-filter:blur(32px) saturate(185%);
+  -webkit-backdrop-filter:blur(32px) saturate(185%);
+  border:1px solid #fff4e059;
+  box-shadow:inset 0 1.5px 0 #fff8e980,inset 0 -1px 0 #ffdcaa1f,0 28px 70px #0e080499}
+.support-close {
+  position:absolute;
+  top:14px;
+  right:14px;
+  display:grid;
+  place-items:center;
+  width:32px;
+  height:32px;
+  padding:0;
+  border-radius:50%;
+  border:1px solid #fff5e038;
+  background:#fff8e91a;
+  color:#fff9ec;
+  cursor:pointer;
+  transition:background-color .15s ease}
+.support-close:hover {
+  background:#fff8e930}
+.support-close:focus-visible,.support-kofi:focus-visible {
+  outline:2px solid #fff9ec;
+  outline-offset:2px}
+.support-eyebrow {
+  margin:0;
+  font-size:11px;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:#ffe6bfcc}
+.support-title {
+  margin:6px 0 4px;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
+  font-size:20px;
+  font-weight:650;
+  letter-spacing:-.01em;
+  line-height:1.3}
+.support-sub {
+  margin:0 auto 16px;
+  font-size:12px;
+  line-height:1.45;
+  color:#fff3dcbf}
+.support-qr-frame {
+  width:min(220px,100%);
+  margin:0 auto;
+  padding:6px;
+  background:#ffffff;
+  border-radius:24px;
+  box-shadow:0 14px 32px #12090366}
+.support-qr-frame img {
+  display:block;
+  width:100%;
+  height:auto;
+  border-radius:18px}
+.support-divider {
+  height:1px;
+  margin:18px 0 14px;
+  background:#fff4dc2e}
+.support-kofi {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:8px 14px;
+  border-radius:999px;
+  border:1px solid #fff4dc36;
+  background:#fff8e918;
+  color:#fff9ec;
+  font-size:12px;
+  font-weight:500;
+  text-decoration:none;
+  transition:background-color .15s ease}
+.support-kofi:hover {
+  background:#fff8e92b}
 .caption {
   position:fixed;
   bottom:clamp(22px,1.8vw,56px);

@@ -60,6 +60,18 @@ Audio: **Mokugyo.wav** by **jonopodmore**, licensed **CC0**, downloaded as the h
 
 Source: https://freesound.org/people/jonopodmore/sounds/607215/ (see `public/assets/CREDITS.txt`).
 
+## Support
+
+- **International:** [Support on Ko-fi](https://ko-fi.com/nqnhut92)
+- **Vietnam (MoMo / VietQR):**
+
+<details>
+<summary>Show MoMo / VietQR code (0% fee · scan with any Vietnamese banking app)</summary>
+
+<img src="public/assets/support-qr.png" alt="MoMo and VietQR code" width="240">
+
+</details>
+
 ## License
 
 Code and illustrations are released under the [MIT License](LICENSE). The audio file `public/assets/mokugyo.mp3` is not covered by it: it is jonopodmore's recording, published under CC0 (see above).

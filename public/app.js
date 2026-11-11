@@ -12,7 +12,10 @@ const MAX_LOOKAHEAD_S = 0.1;
 const HIDE_CONTROLS_AFTER_MS = 4500;
 const soundButton = document.querySelector('#sound');
 const pauseButton = document.querySelector('#pause');
+const sponsorButton = document.querySelector('#sponsor');
 const fullButton = document.querySelector('#full');
+const supportModal = document.querySelector('#support-modal');
+const supportClose = document.querySelector('#support-close');
 const scene = document.querySelector('.scene');
 const video = document.querySelector('.clip');
 const canvas = document.querySelector('canvas.cat');
@@ -270,17 +273,48 @@ showPaused();
 function wakeControls() {
   document.body.classList.remove('hidden');
   clearTimeout(hideTimer);
+  if (supportModal && !supportModal.hidden) return;
   hideTimer = setTimeout(() => {
     document.body.classList.add('hidden');
   }, HIDE_CONTROLS_AFTER_MS);
 }
 
+function openSupportModal() {
+  if (!supportModal) return;
+  supportModal.hidden = false;
+  clearTimeout(hideTimer);
+  document.body.classList.remove('hidden');
+  supportClose?.focus();
+}
+
+function closeSupportModal() {
+  if (!supportModal || supportModal.hidden) return;
+  supportModal.hidden = true;
+  if (location.hash === '#support') {
+    history.replaceState(null, '', location.pathname + location.search);
+  }
+  sponsorButton?.focus();
+  wakeControls();
+}
+
+sponsorButton?.addEventListener('click', openSupportModal);
+supportClose?.addEventListener('click', closeSupportModal);
+supportModal?.addEventListener('click', event => {
+  if (event.target === supportModal) closeSupportModal();
+});
+if (location.hash === '#support') openSupportModal();
+
 document.addEventListener('pointermove', wakeControls);
 document.addEventListener('pointerdown', wakeControls);
 document.addEventListener('focusin', wakeControls);
 document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && supportModal && !supportModal.hidden) {
+    event.preventDefault();
+    closeSupportModal();
+    return;
+  }
   wakeControls();
-  if (event.code === 'Space' && event.target === document.body) {
+  if (event.code === 'Space' && event.target === document.body && (!supportModal || supportModal.hidden)) {
     event.preventDefault();
     pauseButton.click();
   }
