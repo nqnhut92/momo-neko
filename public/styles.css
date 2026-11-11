@@ -28,10 +28,7 @@ body {
   left:50%;
   transform:translateX(-50%);
   filter:drop-shadow(0 18px 12px #43240b30);
-  pointer-events:auto;
-  cursor:pointer;
-  user-select:none;
-  -webkit-tap-highlight-color:transparent}
+  pointer-events:none}
 .ripple {
   position:absolute;
   border-radius:50%;

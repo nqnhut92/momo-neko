@@ -234,27 +234,6 @@ function spawnMokugyoRipple() {
   ripple.addEventListener('animationend', () => ripple.remove());
 }
 
-async function handleInteractiveStrike() {
-  wakeControls();
-  if (muted) {
-    try {
-      await initializeAudio();
-      muted = false;
-      soundButton.dataset.on = 'true';
-      setButton(soundButton, soundOnIcon, 'Tắt âm thanh');
-    } catch (e) {
-      console.error(e);
-    }
-  }
-  spawnMokugyoRipple();
-  knock(0);
-}
-
-scene.addEventListener('pointerdown', (e) => {
-  e.preventDefault();
-  handleInteractiveStrike();
-});
-
 function onVideoFrame(now, frame) {
   drawFrame();
   const time = frame ? frame.mediaTime : video.currentTime;
@@ -304,9 +283,6 @@ document.addEventListener('keydown', event => {
   if (event.code === 'Space' && event.target === document.body) {
     event.preventDefault();
     pauseButton.click();
-  } else if ((event.code === 'KeyK' || event.code === 'Enter') && event.target === document.body) {
-    event.preventDefault();
-    handleInteractiveStrike();
   }
 });
 wakeControls();
