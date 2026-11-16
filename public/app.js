@@ -1,9 +1,9 @@
 'use strict';
 
 // assets/momo.mp4 is the cat layer: each frame stacks the colour (top half) over the alpha (bottom half).
-// It loops for 8 seconds and holds 12 strikes (the same 2-second take four times, so the
-// browser's loop restart hitch happens four times less often). At 60 fps the mallet lands on frames 0, 40,
-// 80, ..., so a strike starts every BEAT_S seconds of video time, beginning at 0.
+// It loops for 8 seconds at 120 fps and holds 12 strikes (the same 2-second take four times, so the
+// browser's loop restart hitch happens four times less often). A strike starts every BEAT_S seconds of
+// video time, beginning at 0.
 const BEAT_S = 2 / 3;
 const BEATS_PER_LOOP = 12;
 // Frame times come from the browser as rounded numbers; this keeps a strike frame that reads a hair early.
