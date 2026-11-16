@@ -36,6 +36,7 @@ let sample;
 let hideTimer;
 let lastBeat = -1;
 let wakeLock = null;
+let userPaused = false;
 
 async function requestWakeLock() {
   if (!('wakeLock' in navigator) || document.hidden || video.paused || wakeLock) return;
@@ -123,6 +124,7 @@ function showPaused() {
 }
 
 pauseButton.addEventListener('click', () => {
+  userPaused = !video.paused;
   if (video.paused) video.play().catch(showPaused);
   else video.pause();
 });
@@ -190,6 +192,8 @@ const drawFrame = (() => {
     || canvas.getContext('experimental-webgl');
   if (!gl) return () => {};
 
+  let ready = false;
+
   function resizeViewport() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const rect = canvas.getBoundingClientRect();
@@ -202,7 +206,6 @@ const drawFrame = (() => {
       gl.viewport(0, 0, targetW, targetH);
     }
   }
-  window.addEventListener('resize', resizeViewport);
 
   const compile = (type, source) => {
     const shader = gl.createShader(type);
@@ -210,32 +213,40 @@ const drawFrame = (() => {
     gl.compileShader(shader);
     return shader;
   };
-  const program = gl.createProgram();
-  gl.attachShader(program, compile(gl.VERTEX_SHADER,
-    'attribute vec2 p; varying vec2 uv;' +
-    'void main() { uv = vec2(p.x + 1.0, 1.0 - p.y) * 0.5; gl_Position = vec4(p, 0.0, 1.0); }'));
-  gl.attachShader(program, compile(gl.FRAGMENT_SHADER,
-    'precision mediump float; varying vec2 uv; uniform sampler2D frame;' +
-    'void main() {' +
-    '  vec3 colour = texture2D(frame, vec2(uv.x, uv.y * 0.5)).rgb;' +
-    '  float alpha = texture2D(frame, vec2(uv.x, 0.5 + uv.y * 0.5)).g;' +
-    '  gl_FragColor = vec4(colour * alpha, alpha);' +
-    '}'));
-  gl.linkProgram(program);
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return () => {};
-  gl.useProgram(program);
-  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
-  const position = gl.getAttribLocation(program, 'p');
-  gl.enableVertexAttribArray(position);
-  gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
-  gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  return () => {
-    if (video.readyState < 2) return;
+
+  // Creates every GPU resource. Runs again after a lost context is restored, because
+  // the browser throws all of them away when it resets the GPU (e.g. moving the window to another display).
+  function build() {
+    ready = false;
+    const program = gl.createProgram();
+    gl.attachShader(program, compile(gl.VERTEX_SHADER,
+      'attribute vec2 p; varying vec2 uv;' +
+      'void main() { uv = vec2(p.x + 1.0, 1.0 - p.y) * 0.5; gl_Position = vec4(p, 0.0, 1.0); }'));
+    gl.attachShader(program, compile(gl.FRAGMENT_SHADER,
+      'precision mediump float; varying vec2 uv; uniform sampler2D frame;' +
+      'void main() {' +
+      '  vec3 colour = texture2D(frame, vec2(uv.x, uv.y * 0.5)).rgb;' +
+      '  float alpha = texture2D(frame, vec2(uv.x, 0.5 + uv.y * 0.5)).g;' +
+      '  gl_FragColor = vec4(colour * alpha, alpha);' +
+      '}'));
+    gl.linkProgram(program);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return;
+    gl.useProgram(program);
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+    const position = gl.getAttribLocation(program, 'p');
+    gl.enableVertexAttribArray(position);
+    gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+    gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    ready = true;
+  }
+
+  function draw() {
+    if (!ready || gl.isContextLost() || video.readyState < 2) return;
     resizeViewport();
     try {
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, video);
@@ -244,7 +255,30 @@ const drawFrame = (() => {
     }
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     scene.classList.add('drawn');
-  };
+  }
+
+  // GPU reset: show the still poster meanwhile, then rebuild and repaint once the browser restores the context.
+  canvas.addEventListener('webglcontextlost', event => {
+    event.preventDefault();
+    ready = false;
+    scene.classList.remove('drawn');
+  });
+  canvas.addEventListener('webglcontextrestored', () => {
+    build();
+    draw();
+  });
+
+  // Changing the canvas size clears it, and a paused video sends no new frames,
+  // so repaint right after every size change (window resize, DevTools, moving to a display with another pixel ratio).
+  new ResizeObserver(draw).observe(canvas);
+  window.addEventListener('resize', draw);
+  (function watchPixelRatio() {
+    matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`)
+      .addEventListener('change', () => { draw(); watchPixelRatio(); }, { once: true });
+  })();
+
+  build();
+  return draw;
 })();
 video.addEventListener('loadeddata', () => drawFrame());
 video.addEventListener('seeked', () => drawFrame());
@@ -267,6 +301,7 @@ function spawnMokugyoRipple() {
 }
 
 function onVideoFrame(now, frame) {
+  lastFrameAt = performance.now();
   drawFrame();
   const time = frame ? frame.mediaTime : video.currentTime;
   // Modulo keeps the loop point from counting twice when the clock reads just under the 2 s end.
@@ -281,9 +316,12 @@ function onVideoFrame(now, frame) {
   watch();
 }
 
+let frameHandle;
+let lastFrameAt = performance.now();
+
 function watch() {
   if (hasFrameCallback) {
-    video.requestVideoFrameCallback(onVideoFrame);
+    frameHandle = video.requestVideoFrameCallback(onVideoFrame);
   } else if (video.paused) {
     watching = false;
   } else {
@@ -293,9 +331,85 @@ function watch() {
 }
 watch();
 
+// Browsers can drop the video's frame callback or pause the video when the window is occluded, moved to
+// another display or resized. Bring playback and the frame loop back whenever that happens.
+function rearmFrameLoop() {
+  if (hasFrameCallback) {
+    video.cancelVideoFrameCallback(frameHandle);
+    watch();
+  } else if (!watching) {
+    watch();
+  }
+  drawFrame();
+}
+
+function recover() {
+  if (document.hidden || !video.getAttribute('src')) return;
+  if (!userPaused && video.paused) video.play().catch(showPaused);
+  rearmFrameLoop();
+  lastFrameAt = performance.now();
+}
+document.addEventListener('visibilitychange', recover);
+window.addEventListener('focus', recover);
+window.addEventListener('pageshow', recover);
+// The decoder itself can stall (readyState stuck at 2, "waiting", no frames) while the page stays smooth;
+// re-arming the callback does not help then. Escalate: re-arm, tiny seek, pause/play, finally reload the clip.
+let stallStep = 0;
+
+function reloadVideo() {
+  const resumeAt = video.currentTime;
+  video.addEventListener('loadedmetadata', () => {
+    video.currentTime = resumeAt;
+    video.play().catch(showPaused);
+    recover();
+  }, { once: true });
+  video.load();
+}
+
+// Each step runs once the picture has been frozen this long (ms); a frame arriving resets the ladder.
+const STALL_STEPS_MS = [500, 900, 1500, 2500];
+const STALL_GIVE_UP_MS = 4500;
+
+setInterval(() => {
+  if (document.hidden || userPaused || !video.getAttribute('src')) {
+    stallStep = 0;
+    return;
+  }
+  if (video.paused) {
+    recover();
+    return;
+  }
+  const frozenFor = performance.now() - lastFrameAt;
+  if (frozenFor < STALL_STEPS_MS[0]) {
+    stallStep = 0;
+    return;
+  }
+  if (frozenFor >= STALL_GIVE_UP_MS) {
+    stallStep = 0;
+    lastFrameAt = performance.now();
+    return;
+  }
+  if (stallStep >= STALL_STEPS_MS.length || frozenFor < STALL_STEPS_MS[stallStep]) return;
+  stallStep++;
+  if (stallStep === 1) {
+    rearmFrameLoop();
+  } else if (stallStep === 2) {
+    video.currentTime = Math.max(0, video.currentTime - 0.05);
+  } else if (stallStep === 3) {
+    video.pause();
+    video.play().catch(showPaused);
+  } else {
+    reloadVideo();
+  }
+}, 150);
+
 // Respect "reduce motion": start on the still cat; the pause button starts it.
-if (matchMedia('(prefers-reduced-motion: reduce)').matches) video.pause();
-else video.play().catch(showPaused);
+if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  userPaused = true;
+  video.pause();
+} else {
+  video.play().catch(showPaused);
+}
 showPaused();
 if (!video.paused) requestWakeLock();
 
